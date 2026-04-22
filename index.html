@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promo Pricing Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+<template id="__bundler_thumbnail" data-bg-color="#0d1520">
+  <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="120" height="11" fill="#131e2e"/>
+    <circle cx="7" cy="5.5" r="2.5" fill="#3b82f6" opacity=".9"/>
+    <rect x="0" y="11" width="20" height="69" fill="#131e2e"/>
+    <rect x="2" y="17" width="15" height="2.5" rx="1.2" fill="#3b82f6" opacity=".7"/>
+    <rect x="2" y="23" width="13" height="2" rx="1" fill="#1a2840"/>
+    <rect x="2" y="28" width="13" height="2" rx="1" fill="#1a2840"/>
+    <rect x="24" y="14" width="20" height="13" rx="2" fill="#131e2e"/>
+    <rect x="27" y="17" width="10" height="1.5" rx=".75" fill="#3b82f6" opacity=".5"/>
+    <rect x="27" y="20" width="7" height="4" rx="1" fill="#3b82f6"/>
+    <rect x="47" y="14" width="20" height="13" rx="2" fill="#131e2e"/>
+    <rect x="50" y="17" width="10" height="1.5" rx=".75" fill="#22c55e" opacity=".5"/>
+    <rect x="50" y="20" width="7" height="4" rx="1" fill="#22c55e"/>
+    <rect x="70" y="14" width="20" height="13" rx="2" fill="#131e2e"/>
+    <rect x="73" y="17" width="10" height="1.5" rx=".75" fill="#f59e0b" opacity=".5"/>
+    <rect x="73" y="20" width="7" height="4" rx="1" fill="#f59e0b"/>
+    <rect x="93" y="14" width="22" height="13" rx="2" fill="#131e2e"/>
+    <rect x="96" y="17" width="10" height="1.5" rx=".75" fill="#3b82f6" opacity=".5"/>
+    <rect x="96" y="20" width="7" height="4" rx="1" fill="#3b82f6"/>
+    <rect x="24" y="30" width="91" height="9" rx="2" fill="#131e2e"/>
+    <rect x="24" y="30" width="2" height="9" rx="1" fill="#f59e0b"/>
+    <rect x="29" y="32.5" width="28" height="1.5" rx=".75" fill="#e2eaf6" opacity=".4"/>
+    <rect x="29" y="36" width="18" height="1" rx=".5" fill="#6b85a8" opacity=".5"/>
+    <rect x="24" y="42" width="91" height="28" rx="2" fill="#131e2e"/>
+    <rect x="24" y="42" width="91" height="5" rx="2" fill="#1a2840"/>
+    <rect x="27" y="50" width="18" height="1.5" rx=".75" fill="#6b85a8" opacity=".4"/>
+    <rect x="48" y="50" width="14" height="1.5" rx=".75" fill="#22c55e" opacity=".5"/>
+    <rect x="65" y="50" width="12" height="1.5" rx=".75" fill="#f04f5a" opacity=".5"/>
+    <rect x="27" y="55" width="18" height="1.5" rx=".75" fill="#6b85a8" opacity=".4"/>
+    <rect x="48" y="55" width="14" height="1.5" rx=".75" fill="#f04f5a" opacity=".5"/>
+    <rect x="27" y="60" width="18" height="1.5" rx=".75" fill="#6b85a8" opacity=".4"/>
+    <rect x="48" y="60" width="14" height="1.5" rx=".75" fill="#22c55e" opacity=".5"/>
+  </svg>
+</template>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text-spin">Cargando datos…</div>
+</div>
+
+<header>
+  <div class="logo-row">
+    <div class="logo-dot"></div>
+    <h1>Promo Pricing Monitor <span>/ Competitive Intelligence</span></h1>
+  </div>
+  <div class="header-right">
+    <div class="last-update" id="last-update">—</div>
+    <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.5 6A4.5 4.5 0 1 1 6 1.5c1.3 0 2.47.55 3.3 1.42L10.5 4.5"/><path d="M8 4.5h2.5V2"/></svg>
+      Actualizar
+    </button>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-label">Markets</div>
+    <div class="nav-item active" data-market="all" onclick="setView('monitor'); filterMarket('all', this)">
+      All Markets <span class="nav-badge" id="badge-all">—</span>
+    </div>
+    <div id="market-nav"></div>
+    <div class="nav-divider"></div>
+    <div class="sidebar-label">Active Promos</div>
+    <div class="nav-item" onclick="setView('monitor'); setTimeout(()=>document.getElementById('promo-section').scrollIntoView(),100)">
+      <span id="promo-nav-label">⚠️ —</span>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="sidebar-label">Analysis</div>
+    <div class="nav-item insights-nav" id="nav-insights" onclick="setView('insights')">
+      ✦ Promo Insights
+    </div>
+  </aside>
+
+  <main>
+    <!-- ── MONITOR VIEW ── -->
+    <div class="view active" id="view-monitor">
+      <div class="error-msg" id="error-msg"></div>
+      <div class="kpi-strip">
+        <div class="kpi-card accent"><div class="kpi-label">Markets Tracked</div><div class="kpi-value" id="kpi-markets">—</div><div class="kpi-sub" id="kpi-markets-sub">—</div></div>
+        <div class="kpi-card accent"><div class="kpi-label">Competitors</div><div class="kpi-value" id="kpi-competitors">—</div><div class="kpi-sub" id="kpi-competitors-sub">—</div></div>
+        <div class="kpi-card win"><div class="kpi-label">Winning</div><div class="kpi-value" id="kpi-win">—</div><div class="kpi-sub">of tracked comparisons</div></div>
+        <div class="kpi-card promo"><div class="kpi-label">Active Promos</div><div class="kpi-value" id="kpi-promos">—</div><div class="kpi-sub" id="kpi-promos-sub">—</div></div>
+      </div>
+      <div id="promo-section">
+        <div class="section-header">
+          <div class="section-title">Active Competitor Promotions</div>
+          <div class="legend">
+            <span class="legend-item"><span class="legend-dot" style="background:var(--win)"></span>Winning</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--lose)"></span>Losing</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--neutral)"></span>No Data</span>
+          </div>
+        </div>
+        <div class="promo-alerts" id="promo-alerts"></div>
+      </div>
+      <div id="market-tables"></div>
+    </div>
+
+    <!-- ── INSIGHTS VIEW ── -->
+    <div class="view" id="view-insights">
+      <div class="period-tabs">
+        <div class="period-tab active" onclick="setInsightsPeriod(15,this)">Últimos 15 días</div>
+        <div class="period-tab" onclick="setInsightsPeriod(30,this)">Último mes</div>
+        <div class="period-tab" onclick="setInsightsPeriod(0,this)">Todo el historial</div>
+      </div>
+
+      <div class="insights-kpi-row">
+        <div class="ikpi"><div class="ikpi-label">Promos registradas</div><div class="ikpi-value" id="ik-total">—</div><div class="ikpi-sub" id="ik-total-sub">en el período</div></div>
+        <div class="ikpi"><div class="ikpi-label">Competidores activos</div><div class="ikpi-value" id="ik-comps">—</div><div class="ikpi-sub" id="ik-comps-sub">con promos</div></div>
+        <div class="ikpi"><div class="ikpi-label">Producto más atacado</div><div class="ikpi-value" style="font-size:15px;padding-top:4px" id="ik-product">—</div><div class="ikpi-sub" id="ik-product-sub">—</div></div>
+        <div class="ikpi"><div class="ikpi-label">Mercado más activo</div><div class="ikpi-value" style="font-size:15px;padding-top:4px" id="ik-market">—</div><div class="ikpi-sub" id="ik-market-sub">—</div></div>
+      </div>
+
+      <!-- AI Analysis cards -->
+      <div class="ai-grid">
+        <div class="ai-card">
+          <div class="ai-card-header"><span class="ai-card-icon">🎯</span><div class="ai-card-title">Foco de Producto</div></div>
+          <div class="ai-card-body"><div class="ai-loading" id="ai-product-focus">Analizando…</div></div>
+        </div>
+        <div class="ai-card">
+          <div class="ai-card-header"><span class="ai-card-icon">💡</span><div class="ai-card-title">Intención Estratégica</div></div>
+          <div class="ai-card-body"><div class="ai-loading" id="ai-intent">Analizando…</div></div>
+        </div>
+        <div class="ai-card">
+          <div class="ai-card-header"><span class="ai-card-icon">👤</span><div class="ai-card-title">Perfil de Usuario Objetivo</div></div>
+          <div class="ai-card-body"><div class="ai-loading" id="ai-user-profile">Analizando…</div></div>
+        </div>
+        <div class="ai-card">
+          <div class="ai-card-header"><span class="ai-card-icon">⚡</span><div class="ai-card-title">Implicaciones para Nuestra Estrategia</div></div>
+          <div class="ai-card-body"><div class="ai-loading" id="ai-strategy">Analizando…</div></div>
+        </div>
+      </div>
+
+      <!-- Product focus bar chart -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div class="table-wrap" style="margin-bottom:0">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text)">Promos por Producto</div>
+          <div style="padding:16px"><div class="bar-chart" id="chart-product"></div></div>
+        </div>
+        <div class="table-wrap" style="margin-bottom:0">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text)">Promos por Competidor</div>
+          <div style="padding:16px"><div class="bar-chart" id="chart-competitor"></div></div>
+        </div>
+      </div>
+
+      <!-- Raw promo table -->
+      <div class="raw-table-wrap">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:12px;font-weight:600;color:var(--text)">Historial de Promociones</span>
+          <span style="font-size:11px;color:var(--muted)" id="raw-count"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Fecha</th><th>Mercado</th><th>Competidor</th><th>Producto</th>
+              <th>Tipo de Promo</th><th>Descripción</th><th>Estado</th>
+            </tr></thead>
+            <tbody id="raw-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Tweak Panel -->
+<div id="tweak-panel">
+  <h3>Tweaks</h3>
+  <div class="tweak-row">
+    <div class="tweak-lbl">Theme</div>
+    <div class="tweak-opts">
+      <button class="tweak-btn active" onclick="setTheme('dark',this)">Dark</button>
+      <button class="tweak-btn" onclick="setTheme('light',this)">Light</button>
+    </div>
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-lbl">Accent</div>
+    <div class="tweak-opts">
+      <button class="tweak-btn active" onclick="setAccent('#3b82f6',this)" style="color:#3b82f6;border-color:#3b82f6">Blue</button>
+      <button class="tweak-btn" onclick="setAccent('#8b5cf6',this)" style="color:#8b5cf6">Violet</button>
+      <button class="tweak-btn" onclick="setAccent('#06b6d4',this)" style="color:#06b6d4">Cyan</button>
+    </div>
+  </div>
+  <div class="tweak-row">
+    <div class="tweak-lbl">Show Active Promos</div>
+    <label class="tweak-toggle" onclick="togglePromos()">
+      <div class="toggle-track on" id="promo-toggle"><div class="toggle-thumb"></div></div>
+      <span style="font-size:11px;color:var(--muted)">Visible</span>
+    </label>
+  </div>
+</div>
+
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>
