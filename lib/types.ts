@@ -37,13 +37,25 @@ export interface RawPromo {
 
 // ─── Insights / AI ──────────────────────────────────────────────────────────
 
-export type InsightsPeriod = 0 | 15 | 30;
+export type InsightsPeriod = 0 | 7 | 15 | 30;
+
+export interface WeeklySummary {
+  executiveSummary: string;
+  keyCompetitorMoves: string[];
+  marketsUnderPressure: string[];
+  targetUserHypothesis: string[];
+  strategicIntentHypothesis: string[];
+  implicationsForAirtm: string[];
+  recommendedActions: string[];
+  dataLimitations: string[];
+}
 
 export interface AIAnalysis {
   productFocus: string;
   intent: string;
   userProfile: string;
   strategy: string;
+  weeklySummary?: WeeklySummary;
 }
 
 export interface InsightsAPIResponse {

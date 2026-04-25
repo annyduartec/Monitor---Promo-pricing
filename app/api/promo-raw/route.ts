@@ -62,7 +62,8 @@ export async function GET(): Promise<NextResponse<APIResponse<RawPromo[]>>> {
       return -1;
     };
 
-    const iDate = idx("date added", "date", "fecha");
+    const iDate  = idx("date added", "fecha agregada");
+    const iStart = idx("start", "inicio", "start date", "fecha inicio");
     const iMkt = idx("market", "mercado", "país", "pais", "country");
     const iComp = idx("competitor", "competidor");
     const iProd = idx(
@@ -87,7 +88,7 @@ export async function GET(): Promise<NextResponse<APIResponse<RawPromo[]>>> {
       "notes"
     );
     const iStat = idx("promo active", "status", "estado", "active", "activo");
-    const iEnd = idx("end date", "fecha fin", "expiry", "vencimiento");
+    const iEnd = idx("end date", "fecha fin", "expiry", "vencimiento", "end", "fin");
 
     const promos: RawPromo[] = rows
       .slice(headerIdx + 1)
@@ -102,8 +103,16 @@ export async function GET(): Promise<NextResponse<APIResponse<RawPromo[]>>> {
           (!statusVal && endDate != null && endDate >= new Date()) ||
           (!statusVal && endDate == null);
 
+        // Primary: Date added — Fallback: Start — null if both empty/unparseable
+        const rawDateStr =
+          (iDate >= 0 && row[iDate]?.trim())
+            ? row[iDate]
+            : (iStart >= 0 && row[iStart]?.trim())
+            ? row[iStart]
+            : "";
+
         return {
-          date: parseDate(iDate >= 0 ? row[iDate] : "")?.toISOString() ?? null,
+          date: parseDate(rawDateStr)?.toISOString() ?? null,
           market: iMkt >= 0 ? row[iMkt] : "",
           competitor: iComp >= 0 ? row[iComp] : "",
           product: iProd >= 0 ? row[iProd] : "",
