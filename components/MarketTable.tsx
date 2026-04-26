@@ -2,6 +2,7 @@
 
 import type { PromoEntry } from "@/lib/types";
 import { getFlag, statusClass, deltaClass } from "@/lib/format";
+import React from "react";
 
 interface MarketTableProps {
   market: string;
@@ -133,7 +134,7 @@ export default function MarketTable({ market, competitors }: MarketTableProps) {
           </thead>
           <tbody>
             {Object.entries(competitors).map(([competitor, products]) => (
-              <>
+              <React.Fragment key={`competitor-${competitor}`}>
                 {/* Competitor group row */}
                 <tr
                   key={`group-${competitor}`}
@@ -220,7 +221,7 @@ export default function MarketTable({ market, competitors }: MarketTableProps) {
                     </tr>
                   );
                 })}
-              </>
+              </React.Fragment>
             ))}
           </tbody>
         </table>
