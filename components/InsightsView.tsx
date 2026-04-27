@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import BarChart from "@/components/BarChart";
 import { countBy, fmtISODate } from "@/lib/format";
-import type { Translation } from "@/lib/translations";
+import type { Lang, Translation } from "@/lib/translations";
 import type { RawPromo, InsightsPeriod, AIAnalysis, WeeklySummary } from "@/lib/types";
 
 interface InsightsViewProps {
@@ -11,6 +11,7 @@ interface InsightsViewProps {
   loading: boolean;
   error: string | null;
   t: Translation;
+  lang: Lang;
 }
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
@@ -233,7 +234,7 @@ function WeeklyBullets({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {items.map((item, i) => {
-        const isInference = dimInference && /^inferencia:/i.test(item);
+        const isInference = dimInference && /^inferencia:|^inference:/i.test(item);
         return (
           <div key={i} style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
             <div
@@ -429,7 +430,7 @@ function WeeklySummaryBlock({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function InsightsView({ promos, loading, error, t }: InsightsViewProps) {
+export default function InsightsView({ promos, loading, error, t, lang }: InsightsViewProps) {
   const [period, setPeriod] = useState<InsightsPeriod>(15);
 
   const [filterMarket,     setFilterMarket]     = useState("");
@@ -528,6 +529,7 @@ export default function InsightsView({ promos, loading, error, t }: InsightsView
           promos: filtered.slice(0, 80),
           period: periodLabel,
           weekly: period === 7,
+          lang,
         }),
       });
       const json = await res.json();
@@ -538,7 +540,7 @@ export default function InsightsView({ promos, loading, error, t }: InsightsView
     } finally {
       setAiLoading(false);
     }
-  }, [filtered, periodLabel, period]);
+  }, [filtered, periodLabel, period, lang]);
 
   useEffect(() => {
     if (filtered.length > 0) {

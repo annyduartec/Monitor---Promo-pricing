@@ -502,7 +502,7 @@ export default function Home() {
 
           {/* ── Insights View ── */}
           {currentView === "insights" && (
-            <InsightsView promos={rawPromos} loading={rawLoading} error={rawError} t={t} />
+            <InsightsView promos={rawPromos} loading={rawLoading} error={rawError} t={t} lang={lang} />
           )}
         </main>
       </div>
