@@ -1,5 +1,7 @@
 "use client";
 
+import type { Translation } from "@/lib/translations";
+
 interface StatCard {
   label: string;
   value: string;
@@ -16,6 +18,7 @@ interface StatsCardsProps {
   trackable: number;
   activePromoCount: number;
   activePromoSub: string;
+  t: Translation;
 }
 
 const VARIANT_COLOR: Record<StatCard["variant"], string> = {
@@ -72,30 +75,31 @@ export default function StatsCards({
   trackable,
   activePromoCount,
   activePromoSub,
+  t,
 }: StatsCardsProps) {
   const cards: StatCard[] = [
     {
-      label: "Markets Tracked",
+      label: t.marketsTracked,
       value: String(marketCount || "—"),
       sub: marketNames.join(" · ") || "—",
       variant: "accent",
     },
     {
-      label: "Competitors",
+      label: t.competitors,
       value: String(competitorCount || "—"),
-      sub: `${productComparisons} product comparisons`,
+      sub: `${productComparisons} ${t.productComparisons}`,
       variant: "accent",
     },
     {
-      label: "Winning",
+      label: t.winning,
       value: trackable ? `${wins}/${trackable}` : "—",
-      sub: "of tracked comparisons",
+      sub: t.ofTrackedComparisons,
       variant: "win",
     },
     {
-      label: "Active Promos",
+      label: t.activePromos,
       value: String(activePromoCount || "—"),
-      sub: activePromoSub || "No active promotions",
+      sub: activePromoSub || t.noActivePromotions,
       variant: "promo",
     },
   ];

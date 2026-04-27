@@ -3,12 +3,14 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import BarChart from "@/components/BarChart";
 import { countBy, fmtISODate } from "@/lib/format";
+import type { Translation } from "@/lib/translations";
 import type { RawPromo, InsightsPeriod, AIAnalysis, WeeklySummary } from "@/lib/types";
 
 interface InsightsViewProps {
   promos: RawPromo[];
   loading: boolean;
   error: string | null;
+  t: Translation;
 }
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
@@ -87,7 +89,7 @@ function FilterSelect({
   );
 }
 
-// ── Existing AI card components ───────────────────────────────────────────────
+// ── AI card components ────────────────────────────────────────────────────────
 
 function AIBullets({ text }: { text: string }) {
   const lines = parseBullets(text);
@@ -114,11 +116,15 @@ function AICard({
   title,
   content,
   loading,
+  analyzingLabel,
+  noContentLabel,
 }: {
   icon: string;
   title: string;
   content: string;
   loading: boolean;
+  analyzingLabel: string;
+  noContentLabel: string;
 }) {
   return (
     <div
@@ -167,13 +173,13 @@ function AICard({
                 flexShrink: 0,
               }}
             />
-            Analizando…
+            {analyzingLabel}
           </div>
         ) : content ? (
           <AIBullets text={content} />
         ) : (
           <p style={{ color: "var(--muted)", fontSize: 12 }}>
-            Sin datos suficientes.
+            {noContentLabel}
           </p>
         )}
       </div>
@@ -213,9 +219,17 @@ function IkpiCard({ label, value, sub }: { label: string; value: string; sub: st
 
 // ── Weekly Summary components ─────────────────────────────────────────────────
 
-function WeeklyBullets({ items, dimInference = false }: { items: string[]; dimInference?: boolean }) {
+function WeeklyBullets({
+  items,
+  dimInference = false,
+  noDataLabel,
+}: {
+  items: string[];
+  dimInference?: boolean;
+  noDataLabel: string;
+}) {
   if (!items.length)
-    return <p style={{ color: "var(--muted)", fontSize: 12 }}>Sin datos suficientes.</p>;
+    return <p style={{ color: "var(--muted)", fontSize: 12 }}>{noDataLabel}</p>;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {items.map((item, i) => {
@@ -248,10 +262,12 @@ function WeeklySection({
   label,
   items,
   dimInference = false,
+  noDataLabel,
 }: {
   label: string;
   items: string[];
   dimInference?: boolean;
+  noDataLabel: string;
 }) {
   return (
     <div>
@@ -267,7 +283,7 @@ function WeeklySection({
       >
         {label}
       </div>
-      <WeeklyBullets items={items} dimInference={dimInference} />
+      <WeeklyBullets items={items} dimInference={dimInference} noDataLabel={noDataLabel} />
     </div>
   );
 }
@@ -275,9 +291,11 @@ function WeeklySection({
 function WeeklySummaryBlock({
   summary,
   loading,
+  t,
 }: {
   summary: WeeklySummary | undefined;
   loading: boolean;
+  t: Translation;
 }) {
   const cardStyle: React.CSSProperties = {
     background: "var(--surface)",
@@ -300,10 +318,10 @@ function WeeklySummaryBlock({
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--promo)", flexShrink: 0 }} />
         <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>
-          Weekly Intelligence Report
+          {t.weeklyReport}
         </span>
       </div>
-      <span style={{ fontSize: 11, color: "var(--muted)" }}>últimos 7 días</span>
+      <span style={{ fontSize: 11, color: "var(--muted)" }}>{t.last7Days}</span>
     </div>
   );
 
@@ -334,7 +352,7 @@ function WeeklySummaryBlock({
               flexShrink: 0,
             }}
           />
-          Generando reporte semanal…
+          {t.generatingWeeklyReport}
         </div>
       </div>
     );
@@ -356,7 +374,7 @@ function WeeklySummaryBlock({
       {header}
       <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
         <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 8 }}>
-          Executive Summary
+          {t.executiveSummary}
         </div>
         <p
           style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.65, margin: 0 }}
@@ -365,22 +383,22 @@ function WeeklySummaryBlock({
       </div>
       <div style={twoColGrid}>
         <div style={twoColCell}>
-          <WeeklySection label="Key Competitor Moves" items={summary.keyCompetitorMoves} />
+          <WeeklySection label={t.keyCompetitorMoves} items={summary.keyCompetitorMoves} noDataLabel={t.insufficientData} />
         </div>
         <div style={twoColCell}>
-          <WeeklySection label="Markets Under Pressure" items={summary.marketsUnderPressure} />
+          <WeeklySection label={t.marketsUnderPressure} items={summary.marketsUnderPressure} noDataLabel={t.insufficientData} />
         </div>
       </div>
       <div style={twoColGrid}>
         <div style={twoColCell}>
-          <WeeklySection label="Target User Hypothesis" items={summary.targetUserHypothesis} dimInference />
+          <WeeklySection label={t.targetUserHypothesis} items={summary.targetUserHypothesis} dimInference noDataLabel={t.insufficientData} />
         </div>
         <div style={twoColCell}>
-          <WeeklySection label="Strategic Intent Hypothesis" items={summary.strategicIntentHypothesis} dimInference />
+          <WeeklySection label={t.strategicIntentHypothesis} items={summary.strategicIntentHypothesis} dimInference noDataLabel={t.insufficientData} />
         </div>
       </div>
       <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
-        <WeeklySection label="Implications for Airtm" items={summary.implicationsForAirtm} />
+        <WeeklySection label={t.implicationsForAirtm} items={summary.implicationsForAirtm} noDataLabel={t.insufficientData} />
       </div>
       <div
         style={{
@@ -390,11 +408,11 @@ function WeeklySummaryBlock({
           borderBottom: "1px solid rgba(59,130,246,0.15)",
         }}
       >
-        <WeeklySection label="Recommended Actions" items={summary.recommendedActions} />
+        <WeeklySection label={t.recommendedActions} items={summary.recommendedActions} noDataLabel={t.insufficientData} />
       </div>
       <div style={{ padding: "12px 20px" }}>
         <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 8, opacity: 0.55 }}>
-          Data Limitations
+          {t.dataLimitations}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
           {summary.dataLimitations.map((item, i) => (
@@ -411,23 +429,20 @@ function WeeklySummaryBlock({
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function InsightsView({ promos, loading, error }: InsightsViewProps) {
-  // Period state
+export default function InsightsView({ promos, loading, error, t }: InsightsViewProps) {
   const [period, setPeriod] = useState<InsightsPeriod>(15);
 
-  // Filter states — "" means no filter applied
   const [filterMarket,     setFilterMarket]     = useState("");
   const [filterCompetitor, setFilterCompetitor] = useState("");
   const [filterPromoType,  setFilterPromoType]  = useState("");
   const [filterProduct,    setFilterProduct]    = useState("");
-  const [filterActive,     setFilterActive]     = useState(""); // "" | "active" | "inactive"
+  const [filterActive,     setFilterActive]     = useState("");
 
-  // AI state
   const [aiAnalysis, setAiAnalysis] = useState<Partial<AIAnalysis>>({});
   const [aiLoading,  setAiLoading]  = useState(false);
   const [aiError,    setAiError]    = useState<string | null>(null);
 
-  // ── Derived filter options (from full dataset, never shrink) ────────────────
+  // ── Derived filter options ──────────────────────────────────────────────────
 
   const marketOptions = useMemo(
     () => [...new Set(promos.map((p) => p.market).filter(Boolean))].sort(),
@@ -457,7 +472,7 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
   }, []);
 
   // ── Filtering chain ─────────────────────────────────────────────────────────
-  // Step 1: period filter
+
   const byPeriod = useMemo(
     () =>
       period === 0
@@ -471,7 +486,6 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
     [promos, period]
   );
 
-  // Step 2: dropdown filters applied on top
   const filtered = useMemo(
     () =>
       byPeriod.filter((p) => {
@@ -487,10 +501,12 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
   );
 
   // ── Derived counts ──────────────────────────────────────────────────────────
+
   const compCounts = countBy(filtered as unknown as Record<string, unknown>[], "competitor");
   const prodCounts = countBy(filtered as unknown as Record<string, unknown>[], "product");
   const mktCounts  = countBy(filtered as unknown as Record<string, unknown>[], "market");
 
+  // periodLabel is sent to the AI API — kept in Spanish regardless of UI lang
   const periodLabel =
     period === 0 ? "todo el historial" :
     period === 7 ? "la última semana"  :
@@ -524,8 +540,6 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
     }
   }, [filtered, periodLabel, period]);
 
-  // Re-run AI when period changes or fresh data arrives; not on every filter change
-  // (user uses "Re-analizar" to refresh after filtering)
   useEffect(() => {
     if (filtered.length > 0) {
       runAIAnalysis();
@@ -536,11 +550,18 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
   // ── Period options ──────────────────────────────────────────────────────────
 
   const PERIOD_OPTIONS: { label: string; value: InsightsPeriod }[] = [
-    { label: "Última semana",   value: 7  },
-    { label: "Últimos 15 días", value: 15 },
-    { label: "Último mes",      value: 30 },
-    { label: "Todo el historial", value: 0 },
+    { label: t.lastWeek,   value: 7  },
+    { label: t.last15Days, value: 15 },
+    { label: t.lastMonth,  value: 30 },
+    { label: t.allHistory, value: 0  },
   ];
+
+  // ── KPI sub-text ────────────────────────────────────────────────────────────
+
+  const periodSub =
+    period === 0 ? t.inAllHistory :
+    period === 7 ? t.inLastWeek   :
+    t.inLastNDays(period);
 
   // ── Loading / error states ──────────────────────────────────────────────────
 
@@ -557,7 +578,7 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
             margin: "0 auto 12px",
           }}
         />
-        Cargando datos de promos…
+        {t.loadingPromos}
       </div>
     );
   }
@@ -571,7 +592,7 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
           fontSize: 13, marginBottom: 20,
         }}
       >
-        Error al cargar Promo Raw: {error}
+        {t.errorLoadingPromoRaw}: {error}
       </div>
     );
   }
@@ -620,7 +641,7 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
               }}
             />
           ) : "✦"}{" "}
-          Re-analizar
+          {t.reanalyze}
         </button>
       </div>
 
@@ -635,31 +656,31 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
         <FilterSelect
           value={filterMarket}
           onChange={setFilterMarket}
-          placeholder="All Markets"
+          placeholder={t.allMarkets}
           options={marketOptions}
         />
         <FilterSelect
           value={filterCompetitor}
           onChange={setFilterCompetitor}
-          placeholder="All Competitors"
+          placeholder={t.allCompetitors}
           options={competitorOptions}
         />
         <FilterSelect
           value={filterPromoType}
           onChange={setFilterPromoType}
-          placeholder="All Promo Types"
+          placeholder={t.allPromoTypes}
           options={promoTypeOptions}
         />
         <FilterSelect
           value={filterProduct}
           onChange={setFilterProduct}
-          placeholder="All Products"
+          placeholder={t.allProducts}
           options={productOptions}
         />
         <FilterSelect
           value={filterActive}
           onChange={setFilterActive}
-          placeholder="All Statuses"
+          placeholder={t.allStatuses}
           options={["active", "inactive"]}
         />
 
@@ -674,12 +695,12 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
               display: "flex", alignItems: "center", gap: 5,
             }}
           >
-            <span style={{ fontSize: 13, lineHeight: 1 }}>×</span> Clear filters
+            <span style={{ fontSize: 13, lineHeight: 1 }}>×</span> {t.clearFilters}
           </button>
         )}
       </div>
 
-      {/* Empty state when filters leave no results */}
+      {/* Empty state */}
       {filtered.length === 0 ? (
         <div
           style={{
@@ -690,12 +711,12 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
         >
           <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.4 }}>◎</div>
           <p style={{ fontSize: 13, color: "var(--text)", marginBottom: 6 }}>
-            No hay promos que coincidan con los filtros aplicados.
+            {t.noMatchPromos}
           </p>
           <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 20 }}>
             {promos.length === 0
-              ? "No se encontraron datos en Promo Raw."
-              : `${promos.length} promos disponibles — prueba ajustando o eliminando algún filtro.`}
+              ? t.noPromoRawData
+              : t.promosAvailable(promos.length)}
           </p>
           {hasFilters && (
             <button
@@ -706,7 +727,7 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
                 color: "var(--muted)", cursor: "pointer",
               }}
             >
-              Limpiar filtros
+              {t.clearFilters}
             </button>
           )}
         </div>
@@ -721,34 +742,30 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
             }}
           >
             <IkpiCard
-              label="Promos registradas"
+              label={t.promosRegistered}
               value={String(filtered.length)}
-              sub={
-                period === 0 ? "en todo el historial" :
-                period === 7 ? "en la última semana"  :
-                `en los últimos ${period} días`
-              }
+              sub={periodSub}
             />
             <IkpiCard
-              label="Competidores activos"
+              label={t.activeCompetitors}
               value={String(compCounts.length)}
               sub={compCounts.slice(0, 2).map((c) => c[0]).join(", ") || "—"}
             />
             <IkpiCard
-              label="Producto más atacado"
+              label={t.mostAttackedProduct}
               value={prodCounts[0]?.[0] || "—"}
-              sub={prodCounts[0] ? `${prodCounts[0][1]} veces` : ""}
+              sub={prodCounts[0] ? t.times(prodCounts[0][1]) : ""}
             />
             <IkpiCard
-              label="Mercado más activo"
+              label={t.mostActiveMarket}
               value={mktCounts[0]?.[0] || "—"}
-              sub={mktCounts[0] ? `${mktCounts[0][1]} promos` : ""}
+              sub={mktCounts[0] ? t.promoCount(mktCounts[0][1]) : ""}
             />
           </div>
 
           {/* Weekly Summary Block */}
           {period === 7 && (
-            <WeeklySummaryBlock summary={aiAnalysis.weeklySummary} loading={aiLoading} />
+            <WeeklySummaryBlock summary={aiAnalysis.weeklySummary} loading={aiLoading} t={t} />
           )}
 
           {/* AI error banner */}
@@ -760,7 +777,7 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
                 fontSize: 12, marginBottom: 16,
               }}
             >
-              ⚠️ AI analysis unavailable: {aiError}
+              ⚠️ {t.aiUnavailable}: {aiError}
             </div>
           )}
 
@@ -772,10 +789,10 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
               gap: 16, marginBottom: 20,
             }}
           >
-            <AICard icon="🎯" title="Foco de Producto"                     content={aiAnalysis.productFocus ?? ""} loading={aiLoading} />
-            <AICard icon="💡" title="Intención Estratégica"                 content={aiAnalysis.intent       ?? ""} loading={aiLoading} />
-            <AICard icon="👤" title="Perfil de Usuario Objetivo"            content={aiAnalysis.userProfile  ?? ""} loading={aiLoading} />
-            <AICard icon="⚡" title="Implicaciones para Nuestra Estrategia" content={aiAnalysis.strategy     ?? ""} loading={aiLoading} />
+            <AICard icon="🎯" title={t.productFocus}         content={aiAnalysis.productFocus ?? ""} loading={aiLoading} analyzingLabel={t.analyzing} noContentLabel={t.insufficientData} />
+            <AICard icon="💡" title={t.strategicIntent}      content={aiAnalysis.intent       ?? ""} loading={aiLoading} analyzingLabel={t.analyzing} noContentLabel={t.insufficientData} />
+            <AICard icon="👤" title={t.targetUserProfile}    content={aiAnalysis.userProfile  ?? ""} loading={aiLoading} analyzingLabel={t.analyzing} noContentLabel={t.insufficientData} />
+            <AICard icon="⚡" title={t.strategyImplications} content={aiAnalysis.strategy     ?? ""} loading={aiLoading} analyzingLabel={t.analyzing} noContentLabel={t.insufficientData} />
           </div>
 
           {/* Bar charts */}
@@ -787,8 +804,8 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
             }}
           >
             {[
-              { title: "Promos por Producto",    data: prodCounts },
-              { title: "Promos por Competidor",  data: compCounts },
+              { title: t.promosByProduct,   data: prodCounts },
+              { title: t.promosByCompetitor, data: compCounts },
             ].map(({ title, data }) => (
               <div
                 key={title}
@@ -826,20 +843,20 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
               }}
             >
               <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text)" }}>
-                Historial de Promociones
+                {t.promoHistory}
               </span>
               <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                {filtered.length} registros
+                {t.recordCount(filtered.length)}
               </span>
             </div>
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
                 <thead>
                   <tr>
-                    {["Fecha", "Mercado", "Competidor", "Producto", "Tipo de Promo", "Descripción", "Estado"].map(
-                      (h) => (
+                    {[t.date, t.market, t.competitor, t.product, t.promoType, t.description, t.status].map(
+                      (h, i) => (
                         <th
-                          key={h}
+                          key={i}
                           style={{
                             fontSize: 10, fontWeight: 600, letterSpacing: "0.07em",
                             textTransform: "uppercase", color: "var(--muted)",
@@ -885,7 +902,7 @@ export default function InsightsView({ promos, loading, error }: InsightsViewPro
                               display: "inline-block",
                             }}
                           />
-                          {p.active ? "Activa" : "Finalizada"}
+                          {p.active ? t.activeStatus : t.endedStatus}
                         </span>
                       </td>
                     </tr>

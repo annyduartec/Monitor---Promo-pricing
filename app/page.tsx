@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import DashboardHeader from "@/components/DashboardHeader";
 import Sidebar from "@/components/Sidebar";
 import StatsCards from "@/components/StatsCards";
@@ -9,6 +9,8 @@ import MarketTable from "@/components/MarketTable";
 import InsightsView from "@/components/InsightsView";
 import ToastContainer, { ToastMessage } from "@/components/Toast";
 import { statusClass } from "@/lib/format";
+import { translations } from "@/lib/translations";
+import type { Lang } from "@/lib/translations";
 import type { MonitorData, PromoEntry, RawPromo, AppView } from "@/lib/types";
 
 // ── Toast helpers ─────────────────────────────────────────────────────────────
@@ -75,14 +77,33 @@ function MonitorFilterSelect({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Home() {
+  // ── Language ───────────────────────────────────────────────────────────────
+
+  const [lang, setLang] = useState<Lang>(() => {
+    if (typeof window === "undefined") return "en";
+    const saved = localStorage.getItem("lang");
+    return saved === "en" || saved === "es" ? saved : "en";
+  });
+  const t = translations[lang];
+
+  // tRef lets stable fetch callbacks read the current translation without
+  // being recreated on every language change (which would re-trigger effects).
+  const tRef = useRef(t);
+  useEffect(() => { tRef.current = t; }, [t]);
+
+  const handleLangChange = useCallback((newLang: Lang) => {
+    setLang(newLang);
+    localStorage.setItem("lang", newLang);
+  }, []);
+
   // ── Navigation & data state ────────────────────────────────────────────────
 
   const [currentView, setCurrentView] = useState<AppView>("monitor");
   const [activeMarket, setActiveMarket] = useState<string>("all");
 
-  const [monitorData, setMonitorData]     = useState<MonitorData | null>(null);
+  const [monitorData, setMonitorData]       = useState<MonitorData | null>(null);
   const [monitorLoading, setMonitorLoading] = useState(true);
-  const [monitorError, setMonitorError]   = useState<string | null>(null);
+  const [monitorError, setMonitorError]     = useState<string | null>(null);
 
   const [rawPromos, setRawPromos]   = useState<RawPromo[]>([]);
   const [rawLoading, setRawLoading] = useState(false);
@@ -95,8 +116,8 @@ export default function Home() {
 
   const [filterCompetitor,  setFilterCompetitor]  = useState("");
   const [filterProduct,     setFilterProduct]     = useState("");
-  const [filterStatus,      setFilterStatus]      = useState(""); // "winning" | "losing" | "nodata"
-  const [filterPromoActive, setFilterPromoActive] = useState(""); // "active" | "inactive"
+  const [filterStatus,      setFilterStatus]      = useState("");
+  const [filterPromoActive, setFilterPromoActive] = useState("");
 
   const hasMonitorFilters = !!(filterCompetitor || filterProduct || filterStatus || filterPromoActive);
 
@@ -131,9 +152,9 @@ export default function Home() {
       if (!json.success) throw new Error(json.error ?? "Failed to load monitor data");
       setMonitorData(json.data as MonitorData);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Error desconocido";
+      const msg = e instanceof Error ? e.message : "Unknown error";
       setMonitorError(msg);
-      addToast(`Error al cargar monitor: ${msg}`, "error");
+      addToast(`${tRef.current.errorLoadMonitor}: ${msg}`, "error");
     } finally {
       setMonitorLoading(false);
     }
@@ -150,9 +171,9 @@ export default function Home() {
       setRawPromos(json.data as RawPromo[]);
       setRawLoaded(true);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Error desconocido";
+      const msg = e instanceof Error ? e.message : "Unknown error";
       setRawError(msg);
-      addToast(`Error al cargar Promo Raw: ${msg}`, "error");
+      addToast(`${tRef.current.errorLoadPromo}: ${msg}`, "error");
     } finally {
       setRawLoading(false);
     }
@@ -162,7 +183,7 @@ export default function Home() {
     setRawLoaded(false);
     await fetchMonitor();
     if (currentView === "insights") await fetchRawPromos();
-    addToast("Datos actualizados", "success");
+    addToast(tRef.current.dataRefreshed, "success");
   }, [fetchMonitor, fetchRawPromos, currentView, addToast]);
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -175,7 +196,6 @@ export default function Home() {
 
   // ── Derived data ───────────────────────────────────────────────────────────
 
-  // Step 1 — sidebar market filter (existing behavior, now memoized)
   const visibleMarkets = useMemo(
     () =>
       monitorData?.marketNames.filter(
@@ -184,7 +204,6 @@ export default function Home() {
     [monitorData, activeMarket]
   );
 
-  // All entries flattened from monitorData — used only for option lists
   const allEntries = useMemo<PromoEntry[]>(() => {
     if (!monitorData) return [];
     return Object.values(monitorData.markets).flatMap((mkt) =>
@@ -192,7 +211,6 @@ export default function Home() {
     );
   }, [monitorData]);
 
-  // Dynamic filter options (derived from full dataset so options never shrink)
   const competitorOptions = useMemo(
     () => [...new Set(allEntries.map((e) => e.competitor).filter(Boolean))].sort(),
     [allEntries]
@@ -202,7 +220,6 @@ export default function Home() {
     [allEntries]
   );
 
-  // Step 2 — apply dropdown filters on top of sidebar-filtered markets
   const filteredMarkets = useMemo<MonitorData["markets"]>(() => {
     if (!monitorData) return {};
     const result: MonitorData["markets"] = {};
@@ -214,7 +231,6 @@ export default function Home() {
       const filteredComps: Record<string, PromoEntry[]> = {};
 
       for (const [comp, products] of Object.entries(mktData)) {
-        // Competitor filter applied at group level
         if (filterCompetitor && comp !== filterCompetitor) continue;
 
         const kept = products.filter((p) => {
@@ -222,7 +238,6 @@ export default function Home() {
 
           if (filterStatus === "winning" && statusClass(p.status) !== "win")  return false;
           if (filterStatus === "losing"  && statusClass(p.status) !== "lose") return false;
-          // "nodata" matches entries where status is empty or contains "No Data"
           if (filterStatus === "nodata"  && !p.status.includes("No Data") && p.status.trim() !== "") return false;
 
           if (filterPromoActive === "active"   && !p.promoImpact.includes("Active")) return false;
@@ -240,7 +255,6 @@ export default function Home() {
     return result;
   }, [monitorData, visibleMarkets, filterCompetitor, filterProduct, filterStatus, filterPromoActive]);
 
-  // Flat list of filtered entries — feeds StatsCards and PromoAlerts
   const filteredEntries = useMemo<PromoEntry[]>(
     () => Object.values(filteredMarkets).flatMap((m) => Object.values(m).flat()),
     [filteredMarkets]
@@ -260,6 +274,9 @@ export default function Home() {
         lastUpdate={monitorData?.lastUpdate ?? "—"}
         loading={monitorLoading}
         onRefresh={handleRefresh}
+        lang={lang}
+        onLangChange={handleLangChange}
+        t={t}
       />
 
       {/* Initial full-screen loading overlay */}
@@ -281,11 +298,11 @@ export default function Home() {
               animation: "spin 0.8s linear infinite",
             }}
           />
-          <p style={{ fontSize: 13, color: "var(--muted)" }}>Cargando datos…</p>
+          <p style={{ fontSize: 13, color: "var(--muted)" }}>{t.loadingData}</p>
         </div>
       )}
 
-      <div style={{ display: "flex", minHeight: "calc(100vh - 61px)" }}>
+      <div style={{ display: "flex", minHeight: "calc(100vh - 76px)" }}>
         <Sidebar
           currentView={currentView}
           marketNames={monitorData?.marketNames ?? []}
@@ -293,6 +310,7 @@ export default function Home() {
           activePromoCount={monitorData?.activePromos.length ?? 0}
           onSetView={setCurrentView}
           onFilterMarket={setActiveMarket}
+          t={t}
         />
 
         <main style={{ flex: 1, padding: "28px 32px", overflowX: "auto" }}>
@@ -313,7 +331,7 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Filter bar — only when data is loaded */}
+              {/* Filter bar */}
               {monitorData && (
                 <div
                   style={{
@@ -326,32 +344,32 @@ export default function Home() {
                   <MonitorFilterSelect
                     value={filterCompetitor}
                     onChange={setFilterCompetitor}
-                    placeholder="All Competitors"
+                    placeholder={t.allCompetitors}
                     options={competitorOptions.map((c) => ({ value: c, label: c }))}
                   />
                   <MonitorFilterSelect
                     value={filterProduct}
                     onChange={setFilterProduct}
-                    placeholder="All Products"
+                    placeholder={t.allProducts}
                     options={productOptions.map((p) => ({ value: p, label: p }))}
                   />
                   <MonitorFilterSelect
                     value={filterStatus}
                     onChange={setFilterStatus}
-                    placeholder="All Statuses"
+                    placeholder={t.allStatuses}
                     options={[
-                      { value: "winning", label: "Winning" },
-                      { value: "losing",  label: "Losing"  },
-                      { value: "nodata",  label: "No Data" },
+                      { value: "winning", label: t.filterWinning },
+                      { value: "losing",  label: t.filterLosing  },
+                      { value: "nodata",  label: t.noData         },
                     ]}
                   />
                   <MonitorFilterSelect
                     value={filterPromoActive}
                     onChange={setFilterPromoActive}
-                    placeholder="All Promos"
+                    placeholder={t.allPromos}
                     options={[
-                      { value: "active",   label: "Active Promo"  },
-                      { value: "inactive", label: "No Promo"      },
+                      { value: "active",   label: t.filterActivePromo },
+                      { value: "inactive", label: t.filterNoPromo     },
                     ]}
                   />
 
@@ -366,13 +384,13 @@ export default function Home() {
                         display: "flex", alignItems: "center", gap: 5,
                       }}
                     >
-                      <span style={{ fontSize: 13, lineHeight: 1 }}>×</span> Clear filters
+                      <span style={{ fontSize: 13, lineHeight: 1 }}>×</span> {t.clearFilters}
                     </button>
                   )}
                 </div>
               )}
 
-              {/* KPI cards — reflect filtered data */}
+              {/* KPI cards */}
               <StatsCards
                 marketCount={filteredMarketNames.length}
                 marketNames={filteredMarketNames}
@@ -386,11 +404,12 @@ export default function Home() {
                     ? filteredActivePromos
                         .map((p) => `${p.competitor} (${p.market.slice(0, 3).toUpperCase()})`)
                         .join(" · ")
-                    : "No active promotions"
+                    : t.noActivePromotions
                 }
+                t={t}
               />
 
-              {/* Active promo alerts — reflect filtered data */}
+              {/* Active promo alerts */}
               <div id="promo-section" style={{ marginBottom: 28 }}>
                 <div
                   style={{
@@ -410,13 +429,13 @@ export default function Home() {
                         background: "var(--accent)", display: "inline-block",
                       }}
                     />
-                    Active Competitor Promotions
+                    {t.activeCompetitorPromos}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 18, fontSize: 11, color: "var(--muted)" }}>
                     {[
-                      { color: "var(--win)",     label: "Winning" },
-                      { color: "var(--lose)",    label: "Losing"  },
-                      { color: "var(--neutral)", label: "No Data" },
+                      { color: "var(--win)",     label: t.legendWinning },
+                      { color: "var(--lose)",    label: t.legendLosing  },
+                      { color: "var(--neutral)", label: t.noData        },
                     ].map(({ color, label }) => (
                       <span key={label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
                         <span style={{ width: 7, height: 7, borderRadius: "50%", background: color, display: "inline-block" }} />
@@ -425,16 +444,17 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-                <PromoAlerts activePromos={filteredActivePromos} />
+                <PromoAlerts activePromos={filteredActivePromos} t={t} />
               </div>
 
-              {/* Per-market tables — filtered */}
+              {/* Per-market tables */}
               {monitorData && filteredMarketNames.length > 0 &&
                 filteredMarketNames.map((market) => (
                   <MarketTable
                     key={market}
                     market={market}
                     competitors={filteredMarkets[market]}
+                    t={t}
                   />
                 ))}
 
@@ -449,12 +469,12 @@ export default function Home() {
                 >
                   <div style={{ fontSize: 28, marginBottom: 12, opacity: 0.4 }}>◎</div>
                   <p style={{ fontSize: 13, color: "var(--text)", marginBottom: 6 }}>
-                    No hay productos que coincidan con los filtros aplicados.
+                    {t.noMatchFilters}
                   </p>
                   <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 20 }}>
                     {allEntries.length > 0
-                      ? `${allEntries.length} comparaciones disponibles — prueba ajustando los filtros.`
-                      : "No hay datos disponibles en el sheet de Monitor."}
+                      ? t.comparisonsAvailable(allEntries.length)
+                      : t.noMonitorData}
                   </p>
                   {hasMonitorFilters && (
                     <button
@@ -465,7 +485,7 @@ export default function Home() {
                         color: "var(--muted)", cursor: "pointer",
                       }}
                     >
-                      Limpiar filtros
+                      {t.clearFilters}
                     </button>
                   )}
                 </div>
@@ -474,7 +494,7 @@ export default function Home() {
               {/* No data at all */}
               {!monitorLoading && !monitorData && !monitorError && (
                 <p style={{ color: "var(--muted)", fontSize: 13, textAlign: "center", paddingTop: 60 }}>
-                  No hay datos disponibles. Verifica la URL del Google Sheet.
+                  {t.noDataCheckUrl}
                 </p>
               )}
             </div>
@@ -482,7 +502,7 @@ export default function Home() {
 
           {/* ── Insights View ── */}
           {currentView === "insights" && (
-            <InsightsView promos={rawPromos} loading={rawLoading} error={rawError} />
+            <InsightsView promos={rawPromos} loading={rawLoading} error={rawError} t={t} />
           )}
         </main>
       </div>

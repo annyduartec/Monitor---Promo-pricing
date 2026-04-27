@@ -2,14 +2,16 @@
 
 import type { PromoEntry } from "@/lib/types";
 import { getFlag, statusClass, deltaClass } from "@/lib/format";
+import type { Translation } from "@/lib/translations";
 import React from "react";
 
 interface MarketTableProps {
   market: string;
   competitors: Record<string, PromoEntry[]>;
+  t: Translation;
 }
 
-function StatusPill({ status }: { status: string }) {
+function StatusPill({ status, noDataLabel }: { status: string; noDataLabel: string }) {
   const cls = statusClass(status);
   const emoji =
     cls === "win" ? "🟢" : cls === "lose" ? "🔴" : "⚪";
@@ -21,7 +23,7 @@ function StatusPill({ status }: { status: string }) {
 
   return (
     <span className={`pill pill-${cls}`}>
-      {emoji} {label || "No Data"}
+      {emoji} {label || noDataLabel}
     </span>
   );
 }
@@ -37,10 +39,12 @@ function PromoCell({
   hasPromo,
   desc,
   delta,
+  activeLabel,
 }: {
   hasPromo: boolean;
   desc: string;
   delta: string;
+  activeLabel: string;
 }) {
   if (!hasPromo) {
     return (
@@ -55,14 +59,14 @@ function PromoCell({
   return (
     <td style={{ padding: "8px 14px", textAlign: "center" }}>
       <span className="promo-tag">
-        ⚠️ Active
+        ⚠️ {activeLabel}
         <span className="tooltip">{desc}</span>
       </span>
     </td>
   );
 }
 
-export default function MarketTable({ market, competitors }: MarketTableProps) {
+export default function MarketTable({ market, competitors, t }: MarketTableProps) {
   return (
     <div style={{ marginBottom: 28 }}>
       {/* Market header */}
@@ -109,10 +113,10 @@ export default function MarketTable({ market, competitors }: MarketTableProps) {
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              {["Competitor", "Product", "Status", "Base ∆", "Promo Impact", "Promo ∆"].map(
+              {[t.competitor, t.product, t.status, t.baseDelta, t.promoImpact, t.promoDelta].map(
                 (h, i) => (
                   <th
-                    key={h}
+                    key={i}
                     style={{
                       fontSize: 10,
                       fontWeight: 600,
@@ -191,7 +195,7 @@ export default function MarketTable({ market, competitors }: MarketTableProps) {
 
                       {/* Status */}
                       <td style={{ padding: "8px 14px", textAlign: "center" }}>
-                        <StatusPill status={p.status} />
+                        <StatusPill status={p.status} noDataLabel={t.noData} />
                       </td>
 
                       {/* Base delta */}
@@ -204,6 +208,7 @@ export default function MarketTable({ market, competitors }: MarketTableProps) {
                         hasPromo={hasPromo}
                         desc={p.promoDesc}
                         delta={p.promoDelta}
+                        activeLabel={t.active}
                       />
 
                       {/* Promo delta */}

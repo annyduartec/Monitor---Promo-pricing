@@ -1,15 +1,23 @@
 "use client";
 
+import type { Lang, Translation } from "@/lib/translations";
+
 interface DashboardHeaderProps {
   lastUpdate: string;
   loading: boolean;
   onRefresh: () => void;
+  lang: Lang;
+  onLangChange: (lang: Lang) => void;
+  t: Translation;
 }
 
 export default function DashboardHeader({
   lastUpdate,
   loading,
   onRefresh,
+  lang,
+  onLangChange,
+  t,
 }: DashboardHeaderProps) {
   return (
     <header
@@ -25,25 +33,89 @@ export default function DashboardHeader({
         zIndex: 100,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      {/* ── Left: title + subtitle ─────────────────────────────────────── */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
         <div
           style={{
-            width: 9,
-            height: 9,
+            width: 8,
+            height: 8,
             borderRadius: "50%",
             background: "var(--accent)",
-            boxShadow: "0 0 10px var(--accent)",
+            boxShadow: "0 0 8px var(--accent)",
+            marginTop: 4,
+            flexShrink: 0,
           }}
         />
-        <h1 style={{ fontSize: 15, fontWeight: 600 }}>
-          Promo Pricing Monitor{" "}
-          <span style={{ color: "var(--muted)", fontWeight: 400 }}>
-            / Competitive Intelligence
-          </span>
-        </h1>
+        <div>
+          <h1
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              color: "var(--text)",
+              lineHeight: 1.2,
+              margin: 0,
+            }}
+          >
+            Promo Pricing Monitor
+          </h1>
+          <p
+            style={{
+              fontSize: 12,
+              color: "var(--muted)",
+              margin: "4px 0 0",
+              lineHeight: 1.2,
+            }}
+          >
+            Real-time view of competitor promos and Airtm positioning
+          </p>
+        </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+      {/* ── Right: controls ────────────────────────────────────────────── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+
+        {/* Language toggle */}
+        <div
+          style={{
+            display: "flex",
+            border: "1px solid var(--border2)",
+            borderRadius: 6,
+            overflow: "hidden",
+          }}
+        >
+          {(["en", "es"] as Lang[]).map((l, i) => (
+            <button
+              key={l}
+              onClick={() => onLangChange(l)}
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.05em",
+                padding: "5px 10px",
+                border: "none",
+                borderRight: i === 0 ? "1px solid var(--border2)" : "none",
+                background: lang === l ? "var(--accent)" : "var(--surface2)",
+                color: lang === l ? "#fff" : "var(--muted)",
+                cursor: lang === l ? "default" : "pointer",
+                transition: "background 0.15s, color 0.15s",
+              }}
+            >
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        {/* Vertical divider */}
+        <div
+          style={{
+            width: 1,
+            height: 20,
+            background: "var(--border2)",
+            flexShrink: 0,
+          }}
+        />
+
+        {/* Last update */}
         {lastUpdate && lastUpdate !== "—" && (
           <div
             style={{
@@ -52,6 +124,7 @@ export default function DashboardHeader({
               display: "flex",
               alignItems: "center",
               gap: 6,
+              whiteSpace: "nowrap",
             }}
           >
             <span
@@ -61,11 +134,14 @@ export default function DashboardHeader({
                 borderRadius: "50%",
                 background: "var(--win)",
                 display: "inline-block",
+                flexShrink: 0,
               }}
             />
-            Last update: {lastUpdate}
+            {t.lastUpdate}: {lastUpdate}
           </div>
         )}
+
+        {/* Refresh button */}
         <button
           onClick={onRefresh}
           disabled={loading}
@@ -83,18 +159,17 @@ export default function DashboardHeader({
             gap: 6,
             opacity: loading ? 0.6 : 1,
             transition: "color 0.15s, border-color 0.15s",
+            whiteSpace: "nowrap",
           }}
           onMouseEnter={(e) => {
             if (!loading) {
               (e.currentTarget as HTMLButtonElement).style.color = "var(--text)";
-              (e.currentTarget as HTMLButtonElement).style.borderColor =
-                "var(--accent)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)";
             }
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLButtonElement).style.color = "var(--muted)";
-            (e.currentTarget as HTMLButtonElement).style.borderColor =
-              "var(--border2)";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border2)";
           }}
         >
           <svg
@@ -109,7 +184,7 @@ export default function DashboardHeader({
             <path d="M10.5 6A4.5 4.5 0 1 1 6 1.5c1.3 0 2.47.55 3.3 1.42L10.5 4.5" />
             <path d="M8 4.5h2.5V2" />
           </svg>
-          Actualizar
+          {loading ? t.refreshing : t.refresh}
         </button>
       </div>
     </header>

@@ -1,6 +1,7 @@
 "use client";
 
 import type { AppView } from "@/lib/types";
+import type { Translation } from "@/lib/translations";
 import { getFlag } from "@/lib/format";
 
 interface SidebarProps {
@@ -10,6 +11,7 @@ interface SidebarProps {
   activePromoCount: number;
   onSetView: (view: AppView) => void;
   onFilterMarket: (market: string) => void;
+  t: Translation;
 }
 
 interface NavItemProps {
@@ -115,6 +117,7 @@ export default function Sidebar({
   activePromoCount,
   onSetView,
   onFilterMarket,
+  t,
 }: SidebarProps) {
   return (
     <aside
@@ -125,12 +128,12 @@ export default function Sidebar({
         borderRight: "1px solid var(--border)",
         padding: "24px 0",
         position: "sticky",
-        top: 61,
-        height: "calc(100vh - 61px)",
+        top: 76,
+        height: "calc(100vh - 76px)",
         overflowY: "auto",
       }}
     >
-      <SidebarLabel>Markets</SidebarLabel>
+      <SidebarLabel>{t.marketsLabel}</SidebarLabel>
 
       <NavItem
         active={currentView === "monitor" && activeMarket === "all"}
@@ -140,7 +143,7 @@ export default function Sidebar({
         }}
         badge={marketNames.length || undefined}
       >
-        All Markets
+        {t.allMarkets}
       </NavItem>
 
       {marketNames.map((m) => (
@@ -158,7 +161,7 @@ export default function Sidebar({
 
       <Divider />
 
-      <SidebarLabel>Active Promos</SidebarLabel>
+      <SidebarLabel>{t.activePromosLabel}</SidebarLabel>
 
       <NavItem
         active={false}
@@ -173,20 +176,20 @@ export default function Sidebar({
         }}
       >
         {activePromoCount > 0
-          ? `⚠️ ${activePromoCount} Active`
-          : "✅ No active promos"}
+          ? `⚠️ ${activePromoCount} ${t.active}`
+          : t.noActivePromosNav}
       </NavItem>
 
       <Divider />
 
-      <SidebarLabel>Analysis</SidebarLabel>
+      <SidebarLabel>{t.analysisLabel}</SidebarLabel>
 
       <NavItem
         isInsights
         active={currentView === "insights"}
         onClick={() => onSetView("insights")}
       >
-        ✦ Promo Insights
+        ✦ {t.promoInsights}
       </NavItem>
     </aside>
   );

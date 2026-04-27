@@ -1,16 +1,18 @@
 "use client";
 
 import type { PromoEntry } from "@/lib/types";
+import type { Translation } from "@/lib/translations";
 
 interface PromoAlertsProps {
   activePromos: PromoEntry[];
+  t: Translation;
 }
 
-export default function PromoAlerts({ activePromos }: PromoAlertsProps) {
+export default function PromoAlerts({ activePromos, t }: PromoAlertsProps) {
   if (activePromos.length === 0) {
     return (
       <p style={{ color: "var(--muted)", fontSize: 13, padding: "12px 0" }}>
-        No hay promociones activas en este momento.
+        {t.noActivePromosNow}
       </p>
     );
   }
@@ -64,7 +66,7 @@ export default function PromoAlerts({ activePromos }: PromoAlertsProps) {
               {p.promoDelta !== "—" ? p.promoDelta : "—"}
             </div>
             <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 2 }}>
-              Promo ∆
+              {t.promoDelta}
             </div>
           </div>
         </div>
