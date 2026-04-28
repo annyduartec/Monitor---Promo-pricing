@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import DashboardHeader from "@/components/DashboardHeader";
+import LoginScreen from "@/components/LoginScreen";
 import Sidebar from "@/components/Sidebar";
 import StatsCards from "@/components/StatsCards";
 import PromoAlerts from "@/components/PromoAlerts";
@@ -94,6 +95,20 @@ export default function Home() {
   const handleLangChange = useCallback((newLang: Lang) => {
     setLang(newLang);
     localStorage.setItem("lang", newLang);
+  }, []);
+
+  // ── Auth ───────────────────────────────────────────────────────────────────
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem("monitor-auth") === "true";
+  });
+
+  const handleLogin = useCallback(() => setIsAuthenticated(true), []);
+
+  const handleLogout = useCallback(() => {
+    sessionStorage.removeItem("monitor-auth");
+    setIsAuthenticated(false);
   }, []);
 
   // ── Navigation & data state ────────────────────────────────────────────────
@@ -268,6 +283,10 @@ export default function Home() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={handleLogin} t={t} />;
+  }
+
   return (
     <>
       <DashboardHeader
@@ -276,6 +295,7 @@ export default function Home() {
         onRefresh={handleRefresh}
         lang={lang}
         onLangChange={handleLangChange}
+        onLogout={handleLogout}
         t={t}
       />
 

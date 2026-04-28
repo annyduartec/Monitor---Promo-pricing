@@ -8,6 +8,7 @@ interface DashboardHeaderProps {
   onRefresh: () => void;
   lang: Lang;
   onLangChange: (lang: Lang) => void;
+  onLogout: () => void;
   t: Translation;
 }
 
@@ -17,6 +18,7 @@ export default function DashboardHeader({
   onRefresh,
   lang,
   onLangChange,
+  onLogout,
   t,
 }: DashboardHeaderProps) {
   return (
@@ -185,6 +187,32 @@ export default function DashboardHeader({
             <path d="M8 4.5h2.5V2" />
           </svg>
           {loading ? t.refreshing : t.refresh}
+        </button>
+
+        {/* Logout */}
+        <button
+          onClick={onLogout}
+          style={{
+            fontSize: 11,
+            fontWeight: 500,
+            padding: "6px 12px",
+            borderRadius: 6,
+            border: "1px solid var(--border2)",
+            background: "transparent",
+            color: "var(--muted)",
+            cursor: "pointer",
+            transition: "color 0.15s, border-color 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.color = "var(--lose)";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--lose)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.color = "var(--muted)";
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border2)";
+          }}
+        >
+          {t.logout}
         </button>
       </div>
     </header>

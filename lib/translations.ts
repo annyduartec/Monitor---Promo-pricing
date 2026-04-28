@@ -127,6 +127,13 @@ export const translations = {
     activeStatus: "Active",
     endedStatus: "Ended",
 
+    // Login / auth
+    loginSubtitle: "Enter the password to continue",
+    loginPasswordPlaceholder: "Password",
+    loginButton: "Enter",
+    loginError: "Incorrect password. Try again.",
+    logout: "Logout",
+
     // Parameterized strings (functions)
     comparisonsAvailable: (n: number) =>
       `${n} comparisons available — try adjusting the filters.`,
@@ -265,6 +272,13 @@ export const translations = {
     promoType: "Tipo de Promo",
     activeStatus: "Activa",
     endedStatus: "Finalizada",
+
+    // Login / auth
+    loginSubtitle: "Ingresa la contraseña para continuar",
+    loginPasswordPlaceholder: "Contraseña",
+    loginButton: "Entrar",
+    loginError: "Contraseña incorrecta. Intenta de nuevo.",
+    logout: "Salir",
 
     // Parameterized strings (functions)
     comparisonsAvailable: (n: number) =>
