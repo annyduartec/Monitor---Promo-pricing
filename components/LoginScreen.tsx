@@ -11,6 +11,7 @@ interface LoginScreenProps {
 export default function LoginScreen({ onLogin, t }: LoginScreenProps) {
   const [password, setPassword] = useState("");
   const [error, setError]       = useState(false);
+  const [focused, setFocused]   = useState(false);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -81,9 +82,9 @@ export default function LoginScreen({ onLogin, t }: LoginScreenProps) {
 
         {/* Title */}
         <h1
+          className="brand-title"
           style={{
             fontSize: 20,
-            fontWeight: 700,
             color: "var(--text)",
             margin: "0 0 6px",
             lineHeight: 1.2,
@@ -115,11 +116,13 @@ export default function LoginScreen({ onLogin, t }: LoginScreenProps) {
           placeholder={t.loginPasswordPlaceholder}
           autoFocus
           autoComplete="current-password"
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           style={{
             padding: "10px 14px",
             fontSize: 13,
-            background: "var(--surface2)",
-            border: `1px solid ${error ? "var(--lose)" : "var(--border2)"}`,
+            background: "var(--surface)",
+            border: `1px solid ${error ? "var(--lose)" : focused ? "var(--accent)" : "var(--border)"}`,
             borderRadius: 7,
             color: "var(--text)",
             outline: "none",
@@ -151,7 +154,7 @@ export default function LoginScreen({ onLogin, t }: LoginScreenProps) {
             background: "var(--accent)",
             color: "#fff",
             border: "none",
-            borderRadius: 7,
+            borderRadius: 9999,
             cursor: "pointer",
             transition: "opacity 0.15s",
           }}

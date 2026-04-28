@@ -51,8 +51,10 @@ export default function DashboardHeader({
         <div>
           <h1
             style={{
-              fontSize: 15,
-              fontWeight: 700,
+              fontFamily: '"Work Sans", system-ui, sans-serif',
+              fontSize: 16,
+              fontWeight: 600,
+              letterSpacing: "0.02em",
               color: "var(--text)",
               lineHeight: 1.2,
               margin: 0,
