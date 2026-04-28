@@ -89,6 +89,7 @@ Strict rules:
 - Do NOT use generic fintech language unless explicitly supported by the insights
 - If something is unclear, stay high-level
 - Remove all redundancy
+- Each section must focus on implications, not just observations. Avoid describing what happened; explain what it means for Airtm.
 
 Format your response exactly as shown below.
 No preamble, no title, no text outside these five sections:
