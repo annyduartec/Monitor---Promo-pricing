@@ -82,6 +82,10 @@ async function generateAISummary(
 The insights below have already been extracted from competitor monitoring data.
 Your only job is to compress and elevate them into a concise C-level briefing.
 
+The data covers two distinct layers — both must be reflected in the summary:
+1. Base pricing signals: how Airtm's structural pricing compares to competitors across markets and flows (competitive, under pressure, or losing ground).
+2. Promotional strategy signals: what competitors are actively deploying through promotions and what intent those promotions reveal (acquisition, habit formation, retention).
+
 Strict rules:
 - Do NOT re-analyze raw data or introduce new assumptions
 - Do NOT infer product categories or competitor strategies beyond what the insights state
@@ -100,16 +104,16 @@ Format your response exactly as shown below.
 No preamble, no title, no text outside these four sections:
 
 Executive Summary:
-[2–3 lines. Open with a direct, outcome-focused sentence that states the market situation as a fact, not a trend in motion. Prefer "competition is consolidating around X" over "competitors are intensifying Y". Based only on the insights.]
+[2–3 lines. Open with a direct, outcome-focused sentence that states the market situation as a fact, not a trend in motion. Reflect both Airtm's structural pricing condition and the overall promotional climate. Prefer "competition is consolidating around X" over "competitors are intensifying Y". Based only on the insights.]
 
 Market Direction:
-[Visible patterns or shifts. Derived strictly from the insights.]
+[Visible patterns or shifts across both base pricing and promo activity. State whether Airtm's structural position is competitive, under pressure, or losing ground in specific markets or flows — expressed as a condition, not a number. Derived strictly from the insights.]
 
 Competitive Signals:
-[What competitors appear to be trying to achieve. Only what the insights support.]
+[What competitors are trying to achieve through their promotions. Focus on intent: acquisition, habit formation, or retention. Only what the insights support.]
 
 Risks:
-[Key strategic risks derived from the insights. State each risk as a clear consequence, not a possibility. Replace soft phrasing like "could draw users" with decisive implications about user preference and Airtm's relevance. No noise.]
+[Key strategic risks derived from both pricing structure and promo behavior. State each risk as a clear consequence, not a possibility. Replace soft phrasing like "could draw users" with decisive implications about user preference and Airtm's relevance. No noise.]
 
 INSIGHTS:
 ${insightsBlock}`;
@@ -303,7 +307,7 @@ export async function GET(
     // ── 3. Empty state ──────────────────────────────────────────────────────
     if (scope.length === 0) {
       const text =
-        "Hey team — Weekly Pricing & Market Insights\n\nNo significant pricing insights detected this week.";
+        "Hey team — Weekly Pricing & Market Insights\n\nNo significant pricing insights detected this week.\n\nFull breakdown available in the pricing monitor:\nhttps://monitor-promo-pricing.vercel.app/";
 
       if (dryRun) {
         return NextResponse.json({ success: true, preview: text });
@@ -347,7 +351,7 @@ export async function GET(
       );
     }
 
-    const fullText = `Hey team — Weekly Pricing & Market Insights\n\n${cleanSummary(summary)}`;
+    const fullText = `Hey team — Weekly Pricing & Market Insights\n\n${cleanSummary(summary)}\n\nFull breakdown available in the pricing monitor:\nhttps://monitor-promo-pricing.vercel.app/`;
 
     // ── 6. Dry-run: return preview without sending ──────────────────────────
     if (dryRun) {
