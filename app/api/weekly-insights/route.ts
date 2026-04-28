@@ -85,7 +85,8 @@ Your only job is to compress and elevate them into a concise C-level briefing.
 Strict rules:
 - Do NOT re-analyze raw data or introduce new assumptions
 - Do NOT infer product categories or competitor strategies beyond what the insights state
-- Do NOT include promo details, percentages, examples, or tables
+- Do NOT include promo details, specific values, individual data points, examples, or tables
+- You MAY include aggregated quantitative signals ONLY when they add strategic value: share of activity (e.g. "majority", "dominant", "~70%"), or relative change vs a prior period if derivable from the insights. Numbers must represent patterns across the full dataset, never a single data point.
 - Do NOT list competitors unless essential to a strategic point
 - Do NOT use generic fintech language unless explicitly supported by the insights
 - If something is unclear, stay high-level
