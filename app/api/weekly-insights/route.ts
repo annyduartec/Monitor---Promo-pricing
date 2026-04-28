@@ -92,16 +92,13 @@ Strict rules:
 - Each section must focus on implications, not just observations. Avoid describing what happened; explain what it means for Airtm.
 
 Format your response exactly as shown below.
-No preamble, no title, no text outside these five sections:
+No preamble, no title, no text outside these four sections:
 
 Executive Summary:
 [2–3 lines. Overall situation based only on the insights.]
 
 Market Direction:
 [Visible patterns or shifts. Derived strictly from the insights.]
-
-Airtm Position:
-[State clearly: winning, losing, or neutral. Based only on the insights.]
 
 Competitive Signals:
 [What competitors appear to be trying to achieve. Only what the insights support.]
