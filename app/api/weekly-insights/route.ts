@@ -57,14 +57,14 @@ function generateSummary(insights: string[]): string {
 // ── Summary post-processing ───────────────────────────────────────────────────
 
 /**
- * Removes the duplicate title the AI tends to emit at the top of the summary
- * ("Weekly Pricing Insights" with or without a leading "#") and strips
- * markdown horizontal rules ("---") that render as literal dashes in Slack.
+ * Strips any title line the AI might still emit at the top ("Weekly Pricing …"
+ * with or without a leading "#") and removes markdown horizontal rules that
+ * render as literal dashes in Slack.
  */
 function cleanSummary(text: string): string {
   return text
     .split("\n")
-    .filter((line) => !/^#+\s*Weekly Pricing Insights\s*$/i.test(line.trim()))
+    .filter((line) => !/^#+\s*Weekly Pricing\b/i.test(line.trim()))
     .filter((line) => !/^-{3,}\s*$/.test(line.trim()))
     .join("\n")
     .trim();
@@ -76,39 +76,39 @@ async function generateAISummary(
   client: Anthropic,
   insightsBlock: string
 ): Promise<string> {
-  const prompt = `You are a pricing and market intelligence analyst.
+  const prompt = `You are a C-level market intelligence analyst writing for Airtm's executive team.
 
-Summarize the following weekly insights for a Pricing team.
+The insights below have already been extracted from competitor monitoring data.
+Your only job is to compress and elevate them into a concise C-level briefing.
 
-Focus on:
-- Key trends
-- Changes in competitor behavior
-- Promo activity
-- Where Airtm is winning or losing
+Strict rules:
+- Do NOT re-analyze raw data or introduce new assumptions
+- Do NOT infer product categories or competitor strategies beyond what the insights state
+- Do NOT include promo details, percentages, examples, or tables
+- Do NOT list competitors unless essential to a strategic point
+- Do NOT use generic fintech language unless explicitly supported by the insights
+- If something is unclear, stay high-level
+- Remove all redundancy
 
-Be concise and structured.
-Do NOT include recommendations.
-
-Format your response exactly as:
-
-Weekly Pricing Insights
+Format your response exactly as shown below.
+No preamble, no title, no text outside these five sections:
 
 Executive Summary:
-...
+[2–3 lines. Overall situation based only on the insights.]
 
-Key Trends:
-...
+Market Direction:
+[Visible patterns or shifts. Derived strictly from the insights.]
 
-Winning:
-...
+Airtm Position:
+[State clearly: winning, losing, or neutral. Based only on the insights.]
 
-Losing / Risks:
-...
+Competitive Signals:
+[What competitors appear to be trying to achieve. Only what the insights support.]
 
-Promo Activity:
-...
+Risks:
+[Key strategic risks derived from the insights. No noise.]
 
-Insights:
+INSIGHTS:
 ${insightsBlock}`;
 
   const message = await client.messages.create({
@@ -300,7 +300,7 @@ export async function GET(
     // ── 3. Empty state ──────────────────────────────────────────────────────
     if (scope.length === 0) {
       const text =
-        "Hey team — Weekly Pricing Insights\n\nNo significant pricing insights detected this week.";
+        "Hey team — Weekly Pricing & Market Insights\n\nNo significant pricing insights detected this week.";
 
       if (dryRun) {
         return NextResponse.json({ success: true, preview: text });
@@ -344,7 +344,7 @@ export async function GET(
       );
     }
 
-    const fullText = `Hey team — Weekly Pricing Insights\n\n${cleanSummary(summary)}`;
+    const fullText = `Hey team — Weekly Pricing & Market Insights\n\n${cleanSummary(summary)}`;
 
     // ── 6. Dry-run: return preview without sending ──────────────────────────
     if (dryRun) {
