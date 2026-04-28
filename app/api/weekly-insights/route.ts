@@ -71,6 +71,25 @@ function cleanSummary(text: string): string {
     .trim();
 }
 
+// ── Date range helper ─────────────────────────────────────────────────────────
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+/** Returns the last 7-day window as "Apr 21–27" or "Mar 28–Apr 3". */
+function formatDateRange(): string {
+  const end = new Date();
+  end.setDate(end.getDate() - 1);          // yesterday
+  const start = new Date(end);
+  start.setDate(start.getDate() - 6);      // 6 days before end → 7-day window
+
+  const sm = MONTHS[start.getMonth()];
+  const em = MONTHS[end.getMonth()];
+
+  return start.getMonth() === end.getMonth()
+    ? `${sm} ${start.getDate()}–${end.getDate()}`
+    : `${sm} ${start.getDate()}–${em} ${end.getDate()}`;
+}
+
 // ── AI-powered summary ────────────────────────────────────────────────────────
 
 async function generateAISummary(
@@ -185,6 +204,8 @@ export async function GET(
   }
 
   try {
+    const title = `Promo Pricing Monitor — Weekly Summary (${formatDateRange()})`;
+
     // ── 1. Fetch and parse the promo-raw sheet ──────────────────────────────
     const sheetUrl =
       process.env.PROMO_RAW_SHEET_URL ?? DEFAULT_PROMO_RAW_SHEET_URL;
@@ -307,7 +328,7 @@ export async function GET(
     // ── 3. Empty state ──────────────────────────────────────────────────────
     if (scope.length === 0) {
       const text =
-        "Hey team — Weekly Pricing & Market Insights\n\nNo significant pricing insights detected this week.\n\nFull breakdown available in the pricing monitor:\nhttps://monitor-promo-pricing.vercel.app/";
+        `${title}\n\nNo significant pricing insights detected this week.\n\nFull breakdown available in the pricing monitor:\nhttps://monitor-promo-pricing.vercel.app/`;
 
       if (dryRun) {
         return NextResponse.json({ success: true, preview: text });
@@ -351,7 +372,7 @@ export async function GET(
       );
     }
 
-    const fullText = `Hey team — Weekly Pricing & Market Insights\n\n${cleanSummary(summary)}\n\nFull breakdown available in the pricing monitor:\nhttps://monitor-promo-pricing.vercel.app/`;
+    const fullText = `${title}\n\n${cleanSummary(summary)}\n\nFull breakdown available in the pricing monitor:\nhttps://monitor-promo-pricing.vercel.app/`;
 
     // ── 6. Dry-run: return preview without sending ──────────────────────────
     if (dryRun) {
