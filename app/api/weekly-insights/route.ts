@@ -54,6 +54,22 @@ function generateSummary(insights: string[]): string {
   return lines.join("\n");
 }
 
+// ── Summary post-processing ───────────────────────────────────────────────────
+
+/**
+ * Removes the duplicate title the AI tends to emit at the top of the summary
+ * ("Weekly Pricing Insights" with or without a leading "#") and strips
+ * markdown horizontal rules ("---") that render as literal dashes in Slack.
+ */
+function cleanSummary(text: string): string {
+  return text
+    .split("\n")
+    .filter((line) => !/^#+\s*Weekly Pricing Insights\s*$/i.test(line.trim()))
+    .filter((line) => !/^-{3,}\s*$/.test(line.trim()))
+    .join("\n")
+    .trim();
+}
+
 // ── AI-powered summary ────────────────────────────────────────────────────────
 
 async function generateAISummary(
@@ -328,7 +344,7 @@ export async function GET(
       );
     }
 
-    const fullText = `Hey team — Weekly Pricing Insights\n\n${summary}`;
+    const fullText = `Hey team — Weekly Pricing Insights\n\n${cleanSummary(summary)}`;
 
     // ── 6. Dry-run: return preview without sending ──────────────────────────
     if (dryRun) {
