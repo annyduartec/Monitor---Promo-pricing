@@ -99,7 +99,7 @@ Format your response exactly as shown below.
 No preamble, no title, no text outside these four sections:
 
 Executive Summary:
-[2–3 lines. Overall situation based only on the insights.]
+[2–3 lines. Open with a direct, outcome-focused sentence that states the market situation as a fact, not a trend in motion. Prefer "competition is consolidating around X" over "competitors are intensifying Y". Based only on the insights.]
 
 Market Direction:
 [Visible patterns or shifts. Derived strictly from the insights.]
@@ -108,7 +108,7 @@ Competitive Signals:
 [What competitors appear to be trying to achieve. Only what the insights support.]
 
 Risks:
-[Key strategic risks derived from the insights. No noise.]
+[Key strategic risks derived from the insights. State each risk as a clear consequence, not a possibility. Replace soft phrasing like "could draw users" with decisive implications about user preference and Airtm's relevance. No noise.]
 
 INSIGHTS:
 ${insightsBlock}`;
