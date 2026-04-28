@@ -67,6 +67,7 @@ function cleanSummary(text: string): string {
     .filter((line) => !/^#+\s*Weekly Pricing\b/i.test(line.trim()))
     .filter((line) => !/^-{3,}\s*$/.test(line.trim()))
     .join("\n")
+    .replace(/\*\*(.+?)\*\*/g, "$1") // strip markdown bold
     .trim();
 }
 
@@ -90,6 +91,9 @@ Strict rules:
 - If something is unclear, stay high-level
 - Remove all redundancy
 - Each section must focus on implications, not just observations. Avoid describing what happened; explain what it means for Airtm.
+- Use measured language. Avoid strong claims like "directly challenging" or "threatening"; prefer "increasing pressure on" or "reducing relevance of".
+- Do NOT introduce internal assumptions as implications. Only state what can be directly derived from the insights.
+- Do NOT use markdown bold (**) anywhere in your response. Use plain text only.
 
 Format your response exactly as shown below.
 No preamble, no title, no text outside these four sections:
