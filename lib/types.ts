@@ -9,6 +9,11 @@ export interface PromoEntry {
   promoImpact: string;
   promoDelta: string;
   promoDesc: string;
+  // Optional reference data for the Base ∆ tooltip (cols 8-11 in the sheet)
+  airtmReference?: string;
+  competitorReference?: string;
+  sourceReference?: string;
+  calculationNote?: string;
 }
 
 export interface MonitorData {

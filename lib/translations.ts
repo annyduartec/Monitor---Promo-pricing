@@ -134,6 +134,15 @@ export const translations = {
     loginError: "Incorrect password. Try again.",
     logout: "Logout",
 
+    // Base ∆ reference tooltip
+    airtmReference: "Airtm reference",
+    competitorReference: "Competitor reference",
+    airtmExchangeRate: "Airtm exchange rate",
+    competitorExchangeRate: "Competitor exchange rate",
+    source: "Source",
+    note: "Note",
+    referenceUnavailable: "No reference data available",
+
     // Parameterized strings (functions)
     comparisonsAvailable: (n: number) =>
       `${n} comparisons available — try adjusting the filters.`,
@@ -279,6 +288,15 @@ export const translations = {
     loginButton: "Entrar",
     loginError: "Contraseña incorrecta. Intenta de nuevo.",
     logout: "Salir",
+
+    // Base ∆ reference tooltip
+    airtmReference: "Referencia Airtm",
+    competitorReference: "Referencia competidor",
+    airtmExchangeRate: "Tasa Airtm",
+    competitorExchangeRate: "Tasa competidor",
+    source: "Fuente",
+    note: "Nota",
+    referenceUnavailable: "No hay referencia disponible",
 
     // Parameterized strings (functions)
     comparisonsAvailable: (n: number) =>

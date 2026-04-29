@@ -3,6 +3,7 @@
 import type { PromoEntry } from "@/lib/types";
 import { getFlag, statusClass, deltaClass } from "@/lib/format";
 import type { Translation } from "@/lib/translations";
+import ReferenceTooltip from "@/components/ReferenceTooltip";
 import React from "react";
 
 interface MarketTableProps {
@@ -200,7 +201,17 @@ export default function MarketTable({ market, competitors, t }: MarketTableProps
 
                       {/* Base delta */}
                       <td style={{ padding: "8px 14px", textAlign: "right" }}>
-                        <DeltaCell value={p.baseDelta} />
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, justifyContent: "flex-end" }}>
+                          <DeltaCell value={p.baseDelta} />
+                          <ReferenceTooltip
+                            airtmReference={p.airtmReference}
+                            competitorReference={p.competitorReference}
+                            sourceReference={p.sourceReference}
+                            calculationNote={p.calculationNote}
+                            competitorName={competitor}
+                            t={t}
+                          />
+                        </span>
                       </td>
 
                       {/* Promo impact */}
